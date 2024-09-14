@@ -115,6 +115,146 @@ kubectl get pods --all-namespaces
 
 
 
+# pod
+```
+vim pod.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+```
+by help of this command we create namespace
+```
+kubectl create namespace nginx
+```
+if want to delet the namespace nginx then try it:
+```
+kubectl delete namespace nginx(for cmd)
+```
+for see  namespace:
+```
+kubectl get namespace
+
+```
+
+
+
+
+## oterwise in yaml:
+```
+vim namespace.yml
+
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nginx
+  labels:
+    name: nginx
+```
+```
+kunectl apply -f namespace.yml
+```
+### now some changes required for pod:
+```
+vim pod.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  namespace: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+
+```
+```
+kubectl apply -f pod.yml
+kubectl get pods -n nginx
+kubectl delete -f pod.yml(this will delete pod.yml)
+```
+## for deployment:
+```
+vim deployment.yml:
+
+
+apiVersion: apps/v1
+kind: deployment
+metadata:
+   name: nginx-deployment
+   Namespace: nginx
+   labels:
+     app: nginx
+spec: 
+  replicas: 5
+  selector:
+    matchlabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80  
+```
+```
+kubectl apply --validate=true --dry-run=client --filename=deployment.yml  
+
+kubectl apply -f deployment.yml
+kubectl get pods -n nginx
+
+kubectl describe pod (name-of-the-pod) -n nginx
+```
+```
+kubectl get all -n nginx
+```
+## as we know the containers are running inside the pod so we can't access over the broweser we need application load balancer or a service:
+```
+vim service.yml
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: nginx
+  labels:
+    app: nginx
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+```
+kubectl apply -f service.yml
+kubectl get deployment -n nginx
+kubectl get service -n nginx
+```
+
+
+
+
+
+
 
 
 #
